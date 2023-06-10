@@ -8,4 +8,31 @@ const questions = [
     }
 ];
 
-module.exports = questions;
+const departmentQuestions = [
+    {
+        type: 'input',
+        name: 'departmentName',
+        message: 'What is the name of the new department?'
+    }
+];
+
+const roleQuestions = [
+    {
+        type: 'input',
+        name: 'roleName',
+        message: 'What is the name of the new role?'
+    },
+    {
+        type: 'input',
+        name: 'roleSalary',
+        message: 'What is the salary of the new role?'
+    },
+    {
+        type: 'list',
+        name: 'roleDepartment',
+        message: 'Which department does the role belong to?',
+        choices: ["IT", "Finance","Sales","Legal","Procurement"]
+    }
+];
+
+module.exports = {questions, departmentQuestions, roleQuestions};
