@@ -17,7 +17,7 @@ const db = mysql.createConnection(
 
 function viewEmployees () {
     return new Promise((resolve, reject) => {
-        db.query(`SELECT * FROM employees`, (err, results) => {
+        db.query(`SELECT employees.id, employees.first_name, employees.last_name, roles.title, departments.name, roles.salary, employees.manager_id FROM employees INNER JOIN roles ON employees.role_id = roles.id;`, (err, results) => {
             if (err) {
                 return reject(err)
             }
@@ -28,7 +28,8 @@ function viewEmployees () {
 
 function viewDepartments () {
     return new Promise((resolve, reject) => {
-        db.query(`SELECT * FROM departments`, (err, results) => {
+        db.query
+        (`SELECT departments.name, departments.id FROM departments`, (err, results) => {
             if (err) {
                 return reject(err)
             }
@@ -41,15 +42,7 @@ function viewDepartments () {
 function viewRoles () {
     return new Promise((resolve, reject) => {
         db.query
-        (`
-        SELECT 
-                title
-            ,   salary
-            ,   department_id
-            ,   id
-        FROM 
-            roles
-         `, (err, results) => {
+        (`SELECT roles.title, roles.id, departments.name, roles.salary FROM roles INNER JOIN departments ON roles.department_id = departments.id;`, (err, results) => {
             if (err) {
                 return reject(err)
             }
