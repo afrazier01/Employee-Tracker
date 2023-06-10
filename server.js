@@ -4,7 +4,8 @@ const mysql = require('mysql2');
 const { runInContext } = require('vm');
 const cTable = require('console.table');
 const { get } = require('http');
-let currentDepartmentNames;
+let currentDepartments;
+let roleDepartmentID;
 
 
 const db = mysql.createConnection(
@@ -95,7 +96,7 @@ function addDepartment (department) {
 //Not sure if data types will matter. salary and department such be int
 function addRole (roleName, roleSalary, roleDepartment) {
     return new Promise ((resolve, reject) => {
-        db.query('INSERT INTO roles (title, salary, department_id) VALUES (`?`,?,?)',[roleName, roleSalary, roleDepartment],(err, results) => {
+        db.query('INSERT INTO roles (title, salary, department_id) VALUES (?,?,?)',[roleName, roleSalary, roleDepartment],(err, results) => {
             if (err) {
                 return reject(err)
             }
@@ -138,8 +139,8 @@ function runApp () {
         inquirer.prompt(departmentQuestions).then((res) => {
             const {departmentName} = res
 
-            addDepartment(departmentName).then(console.log(`${departmentName} was added to the database.`))
-            
+            console.log(`\n`);
+            addDepartment(departmentName).then(console.log(`${departmentName} was successfully added to the database!`))
             runApp();
         })
     }
@@ -147,14 +148,16 @@ function runApp () {
         //getDepartments function then fill list
         db.query
         (`SELECT 
-            departments.name
+            departments.name,
+            departments.id
         FROM 
             departments`, (err, results) => {
             if (err) {
                 return console.error(err)
             }
             
-            currentDepartmentNames = results.map(({name}) => name)
+            currentDepartments = results.map(({name,id}) => ({name,id}));
+            
         
             inquirer.prompt([
                 {
@@ -171,14 +174,22 @@ function runApp () {
                     type: 'list',
                     name: 'roleDepartment',
                     message: 'Which department does the role belong to?',
-                    choices: currentDepartmentNames
+                    choices: currentDepartments
             }])
             .then((res) => {
             const {roleName, roleSalary, roleDepartment} = res
-
+            
+            
+            
+            for (let i=0;i<currentDepartments.length; i++) {
+                if (currentDepartments[i].name===roleDepartment) {
+                    roleDepartmentID = currentDepartments[i].id
+                }
+            }
+            
                 
-
-            addRole(roleName, roleSalary, roleDepartment).then(console.log(`${roleName} was added to the database.`))
+            console.log(`\n`);
+            addRole(roleName, roleSalary, roleDepartmentID).then(console.log(`${roleName} was successfully added to the database!`))
             runApp();
             })
         });
