@@ -4,6 +4,8 @@ const mysql = require('mysql2');
 const { runInContext } = require('vm');
 const cTable = require('console.table');
 const { get } = require('http');
+let currentDepartmentNames;
+
 
 const db = mysql.createConnection(
     {
@@ -105,6 +107,7 @@ function addRole (roleName, roleSalary, roleDepartment) {
 function runApp () {
     inquirer.prompt(questions).then((res) => {
     const {query_type} = res
+    
 
     if (query_type === 'Quit') {
         console.log(`\n\n`);
@@ -151,34 +154,34 @@ function runApp () {
                 return console.error(err)
             }
             
-            console.log(results);
-            }); 
-        // inquirer.prompt([
-        //     {
-        //         type: 'input',
-        //         name: 'roleName',
-        //         message: 'What is the name of the new role?'
-        //     },
-        //     {
-        //         type: 'input',
-        //         name: 'roleSalary',
-        //         message: 'What is the salary of the new role?'
-        //     },
-        //     {
-        //         type: 'list',
-        //         name: 'roleDepartment',
-        //         message: 'Which department does the role belong to?',
-        //         choices: []
-        //     }])
-        //     .then((res) => {
-        //     const {roleName, roleSalary, roleDepartment} = res
+            currentDepartmentNames = results.map(({name}) => name)
+        
+            inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'roleName',
+                    message: 'What is the name of the new role?'
+                },
+                {
+                    type: 'input',
+                    name: 'roleSalary',
+                    message: 'What is the salary of the new role?'
+                },
+                {
+                    type: 'list',
+                    name: 'roleDepartment',
+                    message: 'Which department does the role belong to?',
+                    choices: currentDepartmentNames
+            }])
+            .then((res) => {
+            const {roleName, roleSalary, roleDepartment} = res
 
-            
+                
 
-        //     addRole(roleName, roleSalary, roleDepartment).then(console.log(`${roleName} was added to the database.`))
-            
-        //     runApp();
-        // })
+            addRole(roleName, roleSalary, roleDepartment).then(console.log(`${roleName} was added to the database.`))
+            runApp();
+            })
+        });
     }
     if (query_type === 'Add employee') {
         
