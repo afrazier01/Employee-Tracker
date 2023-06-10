@@ -3,6 +3,7 @@ const {questions,departmentQuestions, roleQuestions} = require('./helpers/questi
 const mysql = require('mysql2');
 const { runInContext } = require('vm');
 const cTable = require('console.table');
+const { get } = require('http');
 
 const db = mysql.createConnection(
     {
@@ -14,9 +15,25 @@ const db = mysql.createConnection(
     console.log('Connected to the employees database.')
 );
 
+//Helper function that perform queries
 function viewEmployees () {
     return new Promise((resolve, reject) => {
-        db.query(`SELECT employees.id, employees.first_name First_Name, employees.last_name Last_Name, roles.title, departments.name Department,roles.salary, employees.manager_id FROM employees INNER JOIN roles ON employees.role_id = roles.id INNER JOIN departments ON roles.department_id = departments.id;`, (err, results) => {
+        db.query(`SELECT 
+                    employees.id ID, 
+                    employees.first_name First_Name, 
+                    employees.last_name Last_Name, 
+                    roles.title Job_Title, 
+                    departments.name Department, 
+                    roles.salary Salary, 
+                    employees.manager_id Manager_ID
+                FROM 
+                    employees 
+                INNER JOIN 
+                    roles 
+                        ON employees.role_id = roles.id 
+                INNER JOIN 
+                    departments 
+                        ON roles.department_id = departments.id;`, (err, results) => {
             if (err) {
                 return reject(err)
             }
@@ -28,7 +45,11 @@ function viewEmployees () {
 function viewDepartments () {
     return new Promise((resolve, reject) => {
         db.query
-        (`SELECT departments.name, departments.id FROM departments`, (err, results) => {
+        (`SELECT 
+            departments.name Department, 
+            departments.id ID 
+        FROM 
+            departments`, (err, results) => {
             if (err) {
                 return reject(err)
             }
@@ -40,7 +61,16 @@ function viewDepartments () {
 function viewRoles () {
     return new Promise((resolve, reject) => {
         db.query
-        (`SELECT roles.title, roles.id, departments.name, roles.salary FROM roles INNER JOIN departments ON roles.department_id = departments.id;`, (err, results) => {
+        (`SELECT 
+            roles.title Job_Titles, 
+            roles.id ID, 
+            departments.name Department, 
+            roles.salary Salary 
+        FROM 
+            roles 
+        INNER JOIN 
+            departments 
+                ON roles.department_id = departments.id;`, (err, results) => {
             if (err) {
                 return reject(err)
             }
@@ -60,11 +90,24 @@ function addDepartment (department) {
     })
 }
 
+//Not sure if data types will matter. salary and department such be int
+function addRole (roleName, roleSalary, roleDepartment) {
+    return new Promise ((resolve, reject) => {
+        db.query('INSERT INTO roles (title, salary, department_id) VALUES (`?`,?,?)',[roleName, roleSalary, roleDepartment],(err, results) => {
+            if (err) {
+                return reject(err)
+            }
+            resolve(results);
+        }); 
+    })
+}
+
 function runApp () {
     inquirer.prompt(questions).then((res) => {
     const {query_type} = res
 
     if (query_type === 'Quit') {
+        console.log(`\n\n`);
         return console.log('Closing Content Management System. Have a great day!') 
     }
     if (query_type === 'View all employees') {
@@ -92,13 +135,50 @@ function runApp () {
         inquirer.prompt(departmentQuestions).then((res) => {
             const {departmentName} = res
 
-            addDepartment(departmentName).then(console.log(`The new department (${departmentName}) has been added to the database.`))
+            addDepartment(departmentName).then(console.log(`${departmentName} was added to the database.`))
             
             runApp();
         })
     }
     if (query_type === 'Add role') {
-        
+        //getDepartments function then fill list
+        db.query
+        (`SELECT 
+            departments.name
+        FROM 
+            departments`, (err, results) => {
+            if (err) {
+                return console.error(err)
+            }
+            
+            console.log(results);
+            }); 
+        // inquirer.prompt([
+        //     {
+        //         type: 'input',
+        //         name: 'roleName',
+        //         message: 'What is the name of the new role?'
+        //     },
+        //     {
+        //         type: 'input',
+        //         name: 'roleSalary',
+        //         message: 'What is the salary of the new role?'
+        //     },
+        //     {
+        //         type: 'list',
+        //         name: 'roleDepartment',
+        //         message: 'Which department does the role belong to?',
+        //         choices: []
+        //     }])
+        //     .then((res) => {
+        //     const {roleName, roleSalary, roleDepartment} = res
+
+            
+
+        //     addRole(roleName, roleSalary, roleDepartment).then(console.log(`${roleName} was added to the database.`))
+            
+        //     runApp();
+        // })
     }
     if (query_type === 'Add employee') {
         
