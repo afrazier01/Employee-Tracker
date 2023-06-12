@@ -4,8 +4,10 @@ const mysql = require('mysql2');
 const { runInContext } = require('vm');
 const cTable = require('console.table');
 const { get } = require('http');
+const { title } = require('process');
 let currentDepartments;
 let roleDepartmentID;
+let currentManagers;
 
 
 const db = mysql.createConnection(
@@ -97,10 +99,20 @@ function addDepartment (department) {
     })
 }
 
-//Not sure if data types will matter. salary and department such be int
 function addRole (roleName, roleSalary, roleDepartment) {
     return new Promise ((resolve, reject) => {
         db.query('INSERT INTO roles (title, salary, department_id) VALUES (?,?,?)',[roleName, roleSalary, roleDepartment],(err, results) => {
+            if (err) {
+                return reject(err)
+            }
+            resolve(results);
+        }); 
+    })
+}
+
+function addEmployee (firstName, lastName, employeeRole, employeeManager) {
+    return new Promise ((resolve, reject) => {
+        db.query('INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES  (?,?,?,?);',[firstName, lastName, employeeRole, employeeManager],(err, results) => {
             if (err) {
                 return reject(err)
             }
@@ -160,7 +172,7 @@ function runApp () {
             }
             
             currentDepartments = results.map(({name,id}) => ({name,id}));
-            
+            console.log(currentDepartments)
         
             inquirer.prompt([
                 {
@@ -195,6 +207,74 @@ function runApp () {
         });
     }
     if (query_type === 'Add employee') {
+        db.query
+        (`SELECT 
+            roles.title,
+            roles.id,
+            employees.id ID,
+            CONCAT(employees.first_name,' ',employees.last_name) manager
+        FROM 
+            employees
+        INNER JOIN
+            roles
+                ON employees.role_id = roles.id;`, (err, results) => {
+            if (err) {
+                return console.error(err);
+            }
+            
+            currentManagers = results.map(({manager}) => manager);
+            
+            currentRoles = results.map(({title}) => title);
+            
+            const currentRoleIDs = results.map(({id,title}) => id,title);
+            
+            
+            
+        
+            inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'firstName',
+                    message: "What is the employee's first name?"
+                },
+                {
+                    type: 'input',
+                    name: 'lastName',
+                    message: "What is the employee's last name?"
+                },
+                {
+                    type: 'list',
+                    name: 'employeeRole',
+                    message: "Which role do you want to assign to the selected employee?",
+                    choices: currentRoles
+                },
+                {
+                    type: 'list',
+                    name: 'employeeManager',
+                    message: "Who is the employee's manager?",
+                    choices: currentManagers
+                }
+            ])
+            .then((res) => {
+            const {firstName, lastName, employeeRole, employeeManager} = res
+            
+            for (let i=0;i<results.length; i++) {
+                if (results[i].title===employeeRole) {
+                    newEmployeeRoleID = results[i].id
+                }
+                if (results[i].manager===employeeManager) {
+                    newEmployeeManagerID = results[i].ID 
+                }
+            }
+            console.log(newEmployeeRoleID)
+            console.log(newEmployeeManagerID)
+
+
+            console.log(`\n`);
+            addEmployee(firstName, lastName, newEmployeeRoleID, newEmployeeManagerID).then(console.log(`${firstName} was successfully added to the database!`))
+            runApp();
+            })
+        });
     }
     if (query_type === 'Update an employee role') {
        
