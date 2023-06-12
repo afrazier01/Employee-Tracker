@@ -224,22 +224,19 @@ function runApp () {
             employees.id ID,
             CONCAT(employees.first_name,' ',employees.last_name) manager
         FROM 
-            employees
-        INNER JOIN
             roles
-                ON employees.role_id = roles.id;`, (err, results) => {
+        LEFT JOIN
+            employees
+                ON roles.id = employees.role_id;`, (err, results) => {
             if (err) {
                 return console.error(err);
             }
             
-            currentManagers = results.map(({manager}) => manager);
+            currentManagers = results.map(({manager}) => manager).filter(manager => manager !== undefined && manager !== null);
             
             currentRoles = results.map(({title}) => title);
             
             const currentRoleIDs = results.map(({id,title}) => id,title);
-            
-            
-            
         
             inquirer.prompt([
                 {
@@ -306,7 +303,6 @@ function runApp () {
             
             currentRoles = results.map(({title}) => title);
             
-        
             inquirer.prompt([
                 {
                     type: 'list',
