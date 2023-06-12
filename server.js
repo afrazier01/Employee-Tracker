@@ -8,6 +8,7 @@ const { title } = require('process');
 let currentDepartments;
 let roleDepartmentID;
 let currentManagers;
+let currentEmployees;
 
 
 const db = mysql.createConnection(
@@ -121,11 +122,21 @@ function addEmployee (firstName, lastName, employeeRole, employeeManager) {
     })
 }
 
+function updateEmployee (updatedEmployeeRoleID, updatedEmployeeID) {
+    return new Promise ((resolve, reject) => {
+        db.query('UPDATE employees SET role_id = ? WHERE employees.id  = ?;',[updatedEmployeeRoleID, updatedEmployeeID],(err, results) => {
+            if (err) {
+                return reject(err)
+            }
+            resolve(results);
+        }); 
+    })
+}
+
 function runApp () {
     inquirer.prompt(questions).then((res) => {
     const {query_type} = res
     
-
     if (query_type === 'Quit') {
         console.log(`\n\n`);
         return console.log('Closing Content Management System. Have a great day!') 
@@ -172,7 +183,6 @@ function runApp () {
             }
             
             currentDepartments = results.map(({name,id}) => ({name,id}));
-            console.log(currentDepartments)
         
             inquirer.prompt([
                 {
@@ -261,13 +271,13 @@ function runApp () {
             for (let i=0;i<results.length; i++) {
                 if (results[i].title===employeeRole) {
                     newEmployeeRoleID = results[i].id
+                    
                 }
                 if (results[i].manager===employeeManager) {
                     newEmployeeManagerID = results[i].ID 
                 }
             }
-            console.log(newEmployeeRoleID)
-            console.log(newEmployeeManagerID)
+            
 
 
             console.log(`\n`);
@@ -277,7 +287,58 @@ function runApp () {
         });
     }
     if (query_type === 'Update an employee role') {
-       
+        db.query
+        (`SELECT 
+            roles.title,
+            roles.id,
+            employees.id ID,
+            CONCAT(employees.first_name,' ',employees.last_name) employee
+        FROM 
+            employees
+        INNER JOIN
+            roles
+                ON employees.role_id = roles.id;`, (err, results) => {
+            if (err) {
+                return console.error(err);
+            }
+            
+            currentEmployees = results.map(({employee}) => employee);
+            
+            currentRoles = results.map(({title}) => title);
+            
+        
+            inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'updatedEmployee',
+                    message: "Which employee's role do you want to update?",
+                    choices: currentEmployees
+                },
+                {
+                    type: 'list',
+                    name: 'job',
+                    message: "Which role do you want to assign to the selected employee?",
+                    choices: currentRoles
+                }
+            ])
+            .then((res) => {
+            const {updatedEmployee, job} = res
+            console.log(updatedEmployee)
+            console.log(job)
+            for (let i=0;i<results.length; i++) {
+                if (results[i].title===job) {
+                    updatedEmployeeRoleID = results[i].id
+                }
+                if (results[i].employee===updatedEmployee) {
+                    updatedEmployeeID = results[i].ID 
+                }   
+            }
+
+            console.log(`\n`);
+            updateEmployee(updatedEmployeeRoleID, updatedEmployeeID).then(console.log(`Role was successfully updated in the database!`))
+            runApp();
+            })
+        });
     }
     });
 };
