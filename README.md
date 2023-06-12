@@ -3,7 +3,9 @@
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
   ## Description
-  [fill later]
+  The challenge for this project was to build a command-line application that acts as a Content Management System that allows a user to interact directly with a company's employee database. This challenge  utilizes Node.js, Inquirer, and MySQL.
+
+  > Note: Take a look [here](https://drive.google.com/file/d/13vnEFGFoMyCNF9MwD2I9huHxI9QTBPdG/view?usp=sharing) to see how you can interact with the sample database!
 
   ## Table of Contents
   1. [Installation](#installation)
@@ -18,13 +20,16 @@
   >npm i
 
   ## Usage
-  [Fill Later]
+  Run the following command to get started:
+  >node server.js or npm start
+
+  Make sure to start the SQL Shell to begin interacting with the sample data.
 
   ## License
   This project is licensed under the MIT license.
 
   ## Contributing
-  [Fill Later]
+  If you'd like to contribute, you can reach me directly at the email address listed below.
 
   ## Tests
   To run tests, run the following command:
