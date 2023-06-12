@@ -28,7 +28,8 @@ function viewEmployees () {
                     roles.title Job_Title, 
                     departments.name Department, 
                     roles.salary Salary, 
-                    employees.manager_id Manager_ID
+                    CONCAT(m.first_name,' ',m.last_name) Manager
+
                 FROM 
                     employees 
                 INNER JOIN 
@@ -36,7 +37,10 @@ function viewEmployees () {
                         ON employees.role_id = roles.id 
                 INNER JOIN 
                     departments 
-                        ON roles.department_id = departments.id;`, (err, results) => {
+                        ON roles.department_id = departments.id
+                LEFT JOIN
+                    employees m
+                        ON employees.manager_id = m.id;`, (err, results) => {
             if (err) {
                 return reject(err)
             }
@@ -142,10 +146,9 @@ function runApp () {
             console.log(`\n`);
             addDepartment(departmentName).then(console.log(`${departmentName} was successfully added to the database!`))
             runApp();
-        })
+        });
     }
     if (query_type === 'Add role') {
-        //getDepartments function then fill list
         db.query
         (`SELECT 
             departments.name,
@@ -153,7 +156,7 @@ function runApp () {
         FROM 
             departments`, (err, results) => {
             if (err) {
-                return console.error(err)
+                return console.error(err);
             }
             
             currentDepartments = results.map(({name,id}) => ({name,id}));
@@ -179,15 +182,12 @@ function runApp () {
             .then((res) => {
             const {roleName, roleSalary, roleDepartment} = res
             
-            
-            
             for (let i=0;i<currentDepartments.length; i++) {
                 if (currentDepartments[i].name===roleDepartment) {
                     roleDepartmentID = currentDepartments[i].id
                 }
             }
-            
-                
+             
             console.log(`\n`);
             addRole(roleName, roleSalary, roleDepartmentID).then(console.log(`${roleName} was successfully added to the database!`))
             runApp();
@@ -195,15 +195,12 @@ function runApp () {
         });
     }
     if (query_type === 'Add employee') {
-        
     }
     if (query_type === 'Update an employee role') {
-        
+       
     }
     });
 };
 
 runApp();
-
-
 

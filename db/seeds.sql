@@ -20,11 +20,11 @@ INSERT INTO roles (title, salary, department_id)
 
 
 INSERT INTO employees (first_name, last_name, role_id, manager_id)
-    VALUES  ("Tae",'Frazier',9,10),
-            ('John','Doe',12,4),
-            ('Mark','Brown',1,5),
-            ('Donna','Wilson',2,6),
-            ('Stephen','Kirk',6,4),
-            ('Fred','Lasso',10,8),
-            ('Phil','Knight',11,9),
-            ('Julie','Lo',5,4);
+    VALUES  ("Tae",'Frazier',9,null),
+            ('John','Doe',12,8),
+            ('Mark','Brown',1,4),
+            ('Donna','Wilson',2,1),
+            ('Stephen','Kirk',6,1),
+            ('Fred','Lasso',10,5),
+            ('Phil','Knight',3,1),
+            ('Julie','Lo',5,null);
